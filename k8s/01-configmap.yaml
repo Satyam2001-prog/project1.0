@@ -1,0 +1,13 @@
+# ConfigMap = non-secret configuration, decoupled from the container image.
+# The same image can run in dev/staging/prod just by pointing it at a
+# different ConfigMap — you never rebuild the image to change config.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orders-api-config
+  namespace: k8s-learning
+data:
+  DB_HOST: "postgres"     # this is the Kubernetes Service name — see 05-postgres-service.yaml
+  DB_PORT: "5432"
+  DB_NAME: "orders"
+  PORT: "3000"

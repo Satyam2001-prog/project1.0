@@ -1,0 +1,18 @@
+# A Service is a stable network identity + load-balancing rule in front
+# of a set of pods (chosen by label selector). Pods come and go with
+# their own random IPs; the Service's DNS name ("postgres" inside this
+# namespace) never changes. This is how orders-api finds the DB without
+# ever knowing a pod IP — same idea as an internal ALB in front of an ECS
+# service, just built into the cluster's DNS.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: k8s-learning
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  # no "type" specified => defaults to ClusterIP (internal-only, not exposed outside the cluster)

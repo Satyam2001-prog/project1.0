@@ -1,0 +1,28 @@
+# The HPA watches a metric (CPU here) on the target Deployment's pods and
+# adjusts .spec.replicas to keep the metric near the target. It needs the
+# metrics-server add-on running in the cluster to have any CPU numbers to
+# read — see README for installing it on kind/minikube.
+#
+# desiredReplicas = ceil(currentReplicas * (currentMetricValue / targetValue))
+# This is the same underlying idea as the ECS Service Auto Scaling you
+# already use, just driven by the cluster's own control loop instead of
+# CloudWatch alarms.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: orders-api-hpa
+  namespace: k8s-learning
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: orders-api
+  minReplicas: 2
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50   # scale up once pods average >50% of their CPU *request*

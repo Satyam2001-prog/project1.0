@@ -1,0 +1,14 @@
+# Pods are ephemeral — if a pod dies, its filesystem dies with it.
+# A PersistentVolumeClaim is a request for durable storage that survives
+# pod restarts. The cluster's StorageClass provisions an actual volume
+# (on EKS this becomes an EBS volume) and binds it to this claim.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: k8s-learning
+spec:
+  accessModes: ["ReadWriteOnce"]   # one node can mount it read-write at a time
+  resources:
+    requests:
+      storage: 1Gi

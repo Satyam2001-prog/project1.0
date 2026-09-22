@@ -1,0 +1,55 @@
+# A Deployment manages a ReplicaSet, which manages Pods. You declare the
+# desired state ("I want 1 replica of this pod template running") and the
+# controller continuously reconciles reality toward that state — kill a
+# pod and it gets recreated automatically. This is the core K8s idea:
+# you describe *what*, the control loop handles *how*.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: k8s-learning
+spec:
+  replicas: 1   # a single-instance stateful DB isn't horizontally scalable like this,
+                # this is a learning shortcut — real Postgres HA uses an operator
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: orders-api-config
+                  key: DB_NAME
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: orders-api-secret
+                  key: DB_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: orders-api-secret
+                  key: DB_PASSWORD
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata   # avoids postgres complaining about a non-empty mount root
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "orders_user"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc

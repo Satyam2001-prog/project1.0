@@ -1,0 +1,8 @@
+# A Namespace is just a logical partition inside one cluster — separate
+# name-scoping, separate resource quotas, separate RBAC boundaries.
+# Everything below lives inside "k8s-learning" so it can't collide with
+# anything else in the cluster.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: k8s-learning
